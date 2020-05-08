@@ -102,10 +102,31 @@ top_df['cluster'] = labels
 top_df['coord_x'], top_df['coord_y'] = reduced_data.T
 
 
+# In[37]:
+
+
+embed = top_df[['province_varietal', 'cluster', 'coord_x', 'coord_y']].set_index('province_varietal'
+                                                                        ).to_dict(orient='index')
+
+
+# In[40]:
+
+
+with open('../data/intermediary/tfidf.json') as f:
+    json.load(f)
+
+
+# In[ ]:
+
+
+clusters = {}
+for pv, vals in embed.items():
+    clusters[pv] = {**vals, }
+
+
 # In[36]:
 
 
 with open('../data/processed/clusters.json', 'w') as fp:
-    json.dump(top_df[['province_varietal', 'cluster', 'coord_x', 'coord_y']].set_index('province_varietal'
-                                                                        ).to_dict(orient='index'), fp)
+    json.dump(, fp)
 
