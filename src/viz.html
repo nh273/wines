@@ -4,7 +4,7 @@
 <body></body>
 
 <script>
-  var margin = { top: 50, right: 50, bottom: 50, left: 50 };
+  var margin = { top: 50, right: 100, bottom: 50, left: 50 };
   var w = 800 - margin.left - margin.right;
   var h = 800 - margin.top - margin.bottom;
   var circleSize = 5;
@@ -30,7 +30,7 @@
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  d3.json("../data/processed/clusters.json").then((data) => {
+  d3.json("../data/processed/clusters.json").then(function (data) {
     var x_min = d3.min(data, (d) => d.coord_x);
     var x_max = d3.max(data, (d) => d.coord_x);
 
@@ -40,6 +40,50 @@
     var xScale = d3.scaleLinear().domain([x_min, x_max]).range([0, w]);
     var yScale = d3.scaleLinear().domain([y_min, y_max]).range([0, h]);
 
+    function handleMouseOver(d, i) {
+      // Use D3 to select element, change color and size
+      d3.select(this).attr("r", circleSize * 2);
+
+      // Specify where to put text label
+      svg
+        .append("text")
+        .attr(
+          // Create an id for text so we can select it later for removing on mouseout
+          "id",
+          "t" + i
+        )
+        .attr("x", () => {
+          let offset = -30;
+          let scaledX = xScale(d.coord_x);
+
+          // Increase the offset if near the right edge
+          if (scaledX > 0.95 * w) {
+            offset = -200;
+          }
+
+          return scaledX + offset;
+        })
+        .attr("y", () => yScale(d.coord_y) - 15)
+        .text(() => d.name);
+    }
+
+    function handleMouseOut(d, i) {
+      d3.select(this).attr("r", circleSize);
+
+      // Select text by id and then remove
+      d3.select("#t" + i).remove();
+    }
+
+    function handleClick(d, i) {
+      svg.select("#tfidf-terms").remove();
+      svg
+        .append("text")
+        .attr("id", "tfidf-terms")
+        .attr("x", 420)
+        .attr("y", 480)
+        .text(() => d.tfidf.map((ft) => ft.feature));
+    }
+
     svg
       .selectAll("circle")
       .data(data)
@@ -48,6 +92,9 @@
       .attr("cx", (d) => xScale(d.coord_x))
       .attr("cy", (d) => yScale(d.coord_y))
       .attr("r", circleSize)
-      .style("fill", (d) => colormap[d.cluster]);
+      .style("fill", (d) => colormap[d.cluster])
+      .on("mouseover", handleMouseOver)
+      .on("mouseout", handleMouseOut)
+      .on("click", handleClick);
   });
 </script>
