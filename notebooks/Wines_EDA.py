@@ -331,13 +331,13 @@ for grape in top_grape_names[:10]:
     look_at('v', grape, n_feats=5)
 
 
-# In[53]:
+# In[92]:
 
 
-top_pv = list(df['province_varietal'].value_counts().nlargest(100).index)
+top_pv = list(df['province_varietal'].value_counts().nlargest(500).index)
 
 
-# In[67]:
+# In[93]:
 
 
 collector = {}
@@ -345,7 +345,16 @@ for pv in top_pv:
     collector[pv] = look_at('pv', pv, 20).to_dict(orient='records')
 
 
-# In[71]:
+# In[94]:
+
+
+for pv in top_pv[:20]:
+    print("-"*10)
+    print(pv)
+    print(look_at('pv', pv, 5))
+
+
+# In[95]:
 
 
 import json
@@ -354,11 +363,11 @@ with open('../data/intermediary/tfidf.json', 'w') as fp:
     json.dump(collector, fp)
 
 
-# In[78]:
+# In[82]:
 
 
 import scipy.sparse
-scipy.sparse.save_npz('../data/intermediary/tfidf_matrix.npy', tfidf_matrix_pv)
+scipy.sparse.save_npz('../data/intermediary/tfidf_matrix.npz', tfidf_matrix_pv)
 
 
 # In[80]:
@@ -373,4 +382,12 @@ with open('../data/intermediary/features.txt', 'w') as f:
 
 
 province_varietal_df.to_csv('../data/intermediary/province_varietal.csv', index=False)
+
+
+# In[96]:
+
+
+with open('../data/intermediary/top_pv.txt', 'w') as f:
+    for pv in top_pv:
+        f.write(f"{pv}\n")
 
