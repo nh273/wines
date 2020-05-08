@@ -5,9 +5,9 @@
 
 <script>
   var margin = { top: 50, right: 100, bottom: 50, left: 50 };
-  var w = 800 - margin.left - margin.right;
-  var h = 800 - margin.top - margin.bottom;
-  var circleSize = 5;
+  var w = 1000 - margin.left - margin.right;
+  var h = 1200 - margin.top - margin.bottom;
+  var circleSize = 15;
   var colormap = {
     0: "#20b2aa",
     1: "#ff7373",
@@ -20,6 +20,14 @@
     8: "#00f91d",
     9: "#da8c49",
   };
+  var normalLabelOffset = -30;
+  var rightEdgeLabelOffset = -200;
+  var labelTopOffset = -15;
+  var termBoxStartX = 650;
+  var termBoxStartY = 700;
+  var termBoxW = 100;
+  var termSize = 25;
+  var termBoxH = termSize - 2;
 
   var svg = d3
     .select("body")
@@ -40,7 +48,7 @@
     var xScale = d3.scaleLinear().domain([x_min, x_max]).range([0, w]);
     var yScale = d3.scaleLinear().domain([y_min, y_max]).range([0, h]);
 
-    function handleMouseOver(d, i) {
+    function handleMouseOverDot(dotData, i) {
       // Use D3 to select element, change color and size
       d3.select(this).attr("r", circleSize * 2);
 
@@ -53,37 +61,72 @@
           "t" + i
         )
         .attr("x", () => {
-          let offset = -30;
-          let scaledX = xScale(d.coord_x);
+          let offset = normalLabelOffset;
+          let scaledX = xScale(dotData.coord_x);
 
           // Increase the offset if near the right edge
           if (scaledX > 0.95 * w) {
-            offset = -200;
+            offset = rightEdgeLabelOffset;
           }
 
           return scaledX + offset;
         })
-        .attr("y", () => yScale(d.coord_y) - 15)
-        .text(() => d.name);
+        .attr("y", () => yScale(dotData.coord_y) + labelTopOffset)
+        .text(() => dotData.name);
     }
 
-    function handleMouseOut(d, i) {
+    function handleMouseOutDot(dotData, i) {
       d3.select(this).attr("r", circleSize);
 
       // Select text by id and then remove
       d3.select("#t" + i).remove();
     }
 
-    function handleClick(d, i) {
-      svg.select("#tfidf-terms").remove();
+    function handleClickTerm(termData) {
+      console.log(data);
+    }
+
+    function handleClickDot(dotData) {
+      svg.selectAll("#tfidf-terms").remove();
+
       svg
         .append("text")
         .attr("id", "tfidf-terms")
-        .attr("x", 420)
-        .attr("y", 480)
-        .text(() => d.tfidf.map((ft) => ft.feature));
+        .attr("x", termBoxStartX)
+        .attr("y", termBoxStartY - 8)
+        .text(dotData.name);
+
+      termBox = svg
+        .selectAll("g")
+        .data(dotData.tfidf)
+        .enter()
+        .append("g")
+        .attr("id", "tfidf-terms")
+        .attr("transform", (d, i) => {
+          return (
+            "translate(" +
+            termBoxStartX +
+            "," +
+            (termBoxStartY + i * termSize) +
+            ")"
+          );
+        })
+        .on("click", handleClickTerm);
+
+      termBox
+        .append("rect")
+        .attr("width", termBoxW)
+        .attr("height", termBoxH)
+        .attr("y", -1)
+        .attr("fill", "yellow");
+
+      termBox
+        .append("text")
+        .attr("y", termSize / 2)
+        .text((d) => d.feature);
     }
 
+    // adding the dots
     svg
       .selectAll("circle")
       .data(data)
@@ -93,8 +136,8 @@
       .attr("cy", (d) => yScale(d.coord_y))
       .attr("r", circleSize)
       .style("fill", (d) => colormap[d.cluster])
-      .on("mouseover", handleMouseOver)
-      .on("mouseout", handleMouseOut)
-      .on("click", handleClick);
+      .on("mouseover", handleMouseOverDot)
+      .on("mouseout", handleMouseOutDot)
+      .on("click", handleClickDot);
   });
 </script>
