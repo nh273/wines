@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<script src="../lib/d3.v5.min.js"></script>
+<body></body>
+
+<script>
+  var margin = { top: 50, right: 50, bottom: 50, left: 50 };
+  var w = 800 - margin.left - margin.right;
+  var h = 800 - margin.top - margin.bottom;
+  var circleSize = 5;
+  var colormap = {
+    0: "#20b2aa",
+    1: "#ff7373",
+    2: "#ffe4e1",
+    3: "#005073",
+    4: "#4d0404",
+    5: "#ccc0ba",
+    6: "#4700f9",
+    7: "#f6f900",
+    8: "#00f91d",
+    9: "#da8c49",
+  };
+
+  var svg = d3
+    .select("body")
+    .append("svg")
+    .attr("class", "mainSvg")
+    .attr("width", w + margin.left + margin.right)
+    .attr("height", h + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  d3.json("../data/processed/clusters.json").then((data) => {
+    var x_min = d3.min(data, (d) => d.coord_x);
+    var x_max = d3.max(data, (d) => d.coord_x);
+
+    var y_min = d3.min(data, (d) => d.coord_y);
+    var y_max = d3.max(data, (d) => d.coord_y);
+
+    var xScale = d3.scaleLinear().domain([x_min, x_max]).range([0, w]);
+    var yScale = d3.scaleLinear().domain([y_min, y_max]).range([0, h]);
+
+    svg
+      .selectAll("circle")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("cx", (d) => xScale(d.coord_x))
+      .attr("cy", (d) => yScale(d.coord_y))
+      .attr("r", circleSize)
+      .style("fill", (d) => colormap[d.cluster]);
+  });
+</script>

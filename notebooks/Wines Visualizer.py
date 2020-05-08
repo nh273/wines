@@ -109,24 +109,24 @@ embed = top_df[['province_varietal', 'cluster', 'coord_x', 'coord_y']].set_index
                                                                         ).to_dict(orient='index')
 
 
-# In[40]:
+# In[41]:
 
 
 with open('../data/intermediary/tfidf.json') as f:
-    json.load(f)
+    words = json.load(f)
 
 
-# In[ ]:
+# In[49]:
 
 
-clusters = {}
+clusters = []
 for pv, vals in embed.items():
-    clusters[pv] = {**vals, }
+    clusters.append({'name': pv, **vals, 'tfidf': words[pv]})
 
 
-# In[36]:
+# In[51]:
 
 
 with open('../data/processed/clusters.json', 'w') as fp:
-    json.dump(, fp)
+    json.dump(clusters, fp)
 
